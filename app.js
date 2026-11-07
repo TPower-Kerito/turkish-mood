@@ -1,15 +1,16 @@
 /**
- * Turkish Mood - Main Client Application Logic
- * =============================================
- * Handles:
- *  1. Theme Switching (Dark Luxury, Cream Minimalist, Compact Café Menu)
- *  2. Image Mode Switching (Smart Crop top 78% vs Full Original Image)
- *  3. Size Grouping (Separate Cards vs Merged Variants with dynamic image/price switch)
- *  4. Google Sheets Hybrid Data Sync & Dynamic Category Generation
- *  5. Search, Filter, & Sort Engine
- *  6. Interactive Espresso Options (Grind & Weight switches)
- *  7. Lightbox Zoom Modal
- *  8. Hidden / Modular WhatsApp Cart Module (Phase 2 ready)
+ * Turkish Mood - Main Client Application Logic (Refined)
+ * =======================================================
+ * Features:
+ *  1. Animated Dark/Light Sliding Pill Toggle Switch in Sticky Header
+ *  2. Customer View Switcher (Standard Grid vs 2-Column Café Menu)
+ *  3. In-Place Natural Position Merged Size Variants (Default ON)
+ *  4. Clean Studio Pre-cropped Images (Zero Baked-in Price Banners)
+ *  5. Hidden Admin/Owner Panel (Only shown with ?admin=1 in URL)
+ *  6. Google Sheets CSV Hybrid Sync & Dynamic Category Tabs
+ *  7. Instant Search, Filter & Sort Engine
+ *  8. Lightbox Zoom Modal
+ *  9. Modular Phase 2 WhatsApp Order Integration
  */
 
 (function () {
@@ -22,20 +23,28 @@
     searchQuery: "",
     sortBy: "default",
     
-    // UI Preview & Owner Settings (persisted in localStorage)
-    theme: localStorage.getItem("turkish_mood_theme") || (window.CONFIG ? window.CONFIG.DEFAULT_THEME : "dark-luxury"),
+    // UI Settings (persisted in localStorage)
+    theme: localStorage.getItem("turkish_mood_theme") || (window.CONFIG ? window.CONFIG.DEFAULT_THEME : "dark"),
+    viewMode: localStorage.getItem("turkish_mood_view_mode") || (window.CONFIG ? window.CONFIG.DEFAULT_VIEW_MODE : "grid"),
     imageMode: localStorage.getItem("turkish_mood_image_mode") || (window.CONFIG ? window.CONFIG.DEFAULT_IMAGE_MODE : "crop"),
-    grouping: localStorage.getItem("turkish_mood_grouping") || (window.CONFIG ? window.CONFIG.DEFAULT_GROUPING : "separate"),
+    grouping: localStorage.getItem("turkish_mood_grouping") || (window.CONFIG ? window.CONFIG.DEFAULT_GROUPING : "merged"),
     
-    // Phase 2 WhatsApp toggle (controlled by CONFIG or preview panel)
+    // Phase 2 WhatsApp toggle
     enableWhatsApp: (window.CONFIG && window.CONFIG.ENABLE_WHATSAPP) || (localStorage.getItem("turkish_mood_preview_wa") === "true"),
 
-    // Interactive selections per card [productId -> { grind, weight, price, image, label }]
+    // Interactive card selections [productId -> { grind, weight, price, image, label }]
     interactiveState: {}
   };
 
+  // Normalization for Theme names
+  function normalizeTheme(t) {
+    if (t === "cream-minimalist" || t === "light") return "light";
+    return "dark";
+  }
+
   // DOM Elements cache
   const DOM = {
+    root: document.documentElement,
     body: document.body,
     grid: document.getElementById("productsGrid"),
     categoriesContainer: document.getElementById("categoriesContainer"),
@@ -46,7 +55,16 @@
     emptyState: document.getElementById("emptyState"),
     resetSearchBtn: document.getElementById("resetSearchBtn"),
     
-    // Preview widget elements
+    // Header Dark/Light Animated Toggle
+    headerThemeToggle: document.getElementById("headerThemeToggle"),
+    themeThumb: document.getElementById("themeThumb"),
+    themeThumbIcon: document.getElementById("themeThumbIcon"),
+    
+    // Customer View Mode Switcher
+    viewModeBtns: document.querySelectorAll("[data-set-view]"),
+    
+    // Admin / Owner Panel
+    previewWidget: document.getElementById("previewWidget"),
     previewToggleBtn: document.getElementById("previewToggleBtn"),
     previewPopover: document.getElementById("previewPopover"),
     previewCloseBtn: document.getElementById("previewCloseBtn"),
@@ -72,7 +90,9 @@
   // 1. Initialization
   // =========================================================
   async function init() {
-    applyTheme(AppState.theme);
+    checkAdminVisibility();
+    applyTheme(normalizeTheme(AppState.theme));
+    applyViewMode(AppState.viewMode);
     applyImageMode(AppState.imageMode);
     applyGrouping(AppState.grouping);
     setupEventListeners();
@@ -89,25 +109,68 @@
     renderCatalog();
   }
 
+  // Check URL for ?admin=1
+  function checkAdminVisibility() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const isAdmin = urlParams.get("admin") === "1" || localStorage.getItem("turkish_mood_admin") === "1";
+    if (isAdmin) {
+      localStorage.setItem("turkish_mood_admin", "1");
+      if (DOM.previewWidget) DOM.previewWidget.style.display = "block";
+    } else {
+      if (DOM.previewWidget) DOM.previewWidget.style.display = "none";
+    }
+  }
+
   // =========================================================
-  // 2. Settings & Preview Widget Controls
+  // 2. Settings & Themes
   // =========================================================
   function applyTheme(themeName) {
-    AppState.theme = themeName;
-    document.body.setAttribute("data-theme", themeName);
-    localStorage.setItem("turkish_mood_theme", themeName);
+    const norm = normalizeTheme(themeName);
+    AppState.theme = norm;
+    DOM.root.setAttribute("data-theme", norm);
+    DOM.body.setAttribute("data-theme", norm);
+    localStorage.setItem("turkish_mood_theme", norm);
     
-    // Update preview radio buttons
+    // Update header animated toggle icon
+    if (DOM.themeThumbIcon) {
+      if (norm === "light") {
+        // Sun icon
+        DOM.themeThumbIcon.innerHTML = `
+          <circle cx="12" cy="12" r="5"/>
+          <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        `;
+      } else {
+        // Moon icon
+        DOM.themeThumbIcon.innerHTML = `
+          <path d="M12.3 2a10 10 0 0 0-.19 20 10 10 0 0 0 8.35-4.5 1 1 0 0 0-.91-1.5 8 8 0 0 1-7.25-14 1 1 0 0 0 0-1.89z"/>
+        `;
+      }
+    }
+
+    // Sync admin panel radio buttons if open
     if (DOM.themeChoiceBtns) {
       DOM.themeChoiceBtns.forEach(btn => {
-        btn.classList.toggle("active", btn.getAttribute("data-set-theme") === themeName);
+        btn.classList.toggle("active", normalizeTheme(btn.getAttribute("data-set-theme")) === norm);
+      });
+    }
+  }
+
+  function applyViewMode(viewMode) {
+    AppState.viewMode = viewMode;
+    DOM.root.setAttribute("data-view-mode", viewMode);
+    DOM.body.setAttribute("data-view-mode", viewMode);
+    localStorage.setItem("turkish_mood_view_mode", viewMode);
+
+    if (DOM.viewModeBtns) {
+      DOM.viewModeBtns.forEach(btn => {
+        btn.classList.toggle("active", btn.getAttribute("data-set-view") === viewMode);
       });
     }
   }
 
   function applyImageMode(mode) {
     AppState.imageMode = mode;
-    document.body.setAttribute("data-image-mode", mode);
+    DOM.body.setAttribute("data-image-mode", mode);
     localStorage.setItem("turkish_mood_image_mode", mode);
 
     if (DOM.imageModeBtns) {
@@ -115,6 +178,7 @@
         btn.classList.toggle("active", btn.getAttribute("data-set-image-mode") === mode);
       });
     }
+    renderCatalog();
   }
 
   function applyGrouping(groupingMode) {
@@ -126,7 +190,6 @@
         btn.classList.toggle("active", btn.getAttribute("data-set-grouping") === groupingMode);
       });
     }
-
     renderCatalog();
   }
 
@@ -147,12 +210,11 @@
   }
 
   // =========================================================
-  // 3. Dynamic Categories Generator (Requirement 3 & Rule 6)
+  // 3. Dynamic Categories Generator
   // =========================================================
   function renderDynamicCategories() {
     if (!DOM.categoriesContainer) return;
 
-    // Extract unique categories from current products
     const categoriesMap = new Map();
     let totalCount = 0;
 
@@ -181,7 +243,6 @@
 
     DOM.categoriesContainer.innerHTML = html;
 
-    // Attach click listeners to tabs
     DOM.categoriesContainer.querySelectorAll(".category-tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         AppState.activeCategory = btn.getAttribute("data-category");
@@ -192,7 +253,7 @@
   }
 
   // =========================================================
-  // 4. Catalog Preparation & Filtering
+  // 4. Catalog Preparation with Natural In-Place Merging
   // =========================================================
   function getPreparedDisplayItems() {
     let items = [...AppState.products];
@@ -224,50 +285,50 @@
       items.sort((a, b) => (a.brand || "").localeCompare(b.brand || "", "ar"));
     }
 
-    // Handle Size Grouping Toggle (Separate vs Merged Variants)
+    // Natural In-Place Size Grouping (Merged Variants)
+    // Ensures grouped items remain in their original category position at top!
     if (AppState.grouping === "merged") {
+      const seenGroups = new Set();
       const mergedList = [];
-      const groups = new Map();
 
       items.forEach(item => {
         if (item.variant_group) {
-          if (!groups.has(item.variant_group)) {
-            groups.set(item.variant_group, []);
+          if (seenGroups.has(item.variant_group)) {
+            // Already merged and placed in-line at first occurrence!
+            return;
           }
-          groups.get(item.variant_group).push(item);
+          seenGroups.add(item.variant_group);
+          
+          // Find all variants with this group in items
+          const groupVariants = items.filter(p => p.variant_group === item.variant_group);
+          if (groupVariants.length <= 1) {
+            mergedList.push(item);
+          } else {
+            groupVariants.sort((a, b) => a.price - b.price);
+            const base = groupVariants[0];
+            const compositeItem = {
+              id: `group-${item.variant_group}`,
+              isMergedCard: true,
+              groupKey: item.variant_group,
+              name: base.name.replace(/\s*\(كيس\)|\s*\(علبة\)/g, "").trim(),
+              brand: base.brand,
+              category: base.category,
+              description: base.description,
+              variants: groupVariants.map(v => ({
+                id: v.id,
+                name: v.name,
+                weight: v.weight,
+                price: v.price,
+                image: v.image,
+                original_image: v.original_image || v.image.replace("cropped/", ""),
+                variant_label: v.variant_label || v.weight
+              })),
+              activeVariantIndex: 0
+            };
+            mergedList.push(compositeItem);
+          }
         } else {
           mergedList.push(item);
-        }
-      });
-
-      // Transform each grouped set into a single composite card
-      groups.forEach((variants, groupKey) => {
-        if (variants.length === 1) {
-          mergedList.push(variants[0]);
-        } else {
-          // Sort variants by price or weight
-          variants.sort((a, b) => a.price - b.price);
-          const base = variants[0];
-          
-          const compositeItem = {
-            id: `group-${groupKey}`,
-            isMergedCard: true,
-            groupKey: groupKey,
-            name: base.name.replace(/\s*\(كيس\)|\s*\(علبة\)/g, ""),
-            brand: base.brand,
-            category: base.category,
-            description: base.description,
-            variants: variants.map(v => ({
-              id: v.id,
-              name: v.name,
-              weight: v.weight,
-              price: v.price,
-              image: v.image,
-              variant_label: v.variant_label || v.weight
-            })),
-            activeVariantIndex: 0
-          };
-          mergedList.push(compositeItem);
         }
       });
 
@@ -275,6 +336,14 @@
     }
 
     return items;
+  }
+
+  // Get active image based on display mode
+  function getProductImage(item) {
+    if (AppState.imageMode === "full") {
+      return item.original_image || item.image.replace("cropped/", "");
+    }
+    return item.image;
   }
 
   // =========================================================
@@ -315,7 +384,6 @@
     const isInteractive = product.interactive && product.options;
     const currentState = AppState.interactiveState[product.id] || {};
     
-    // Default interactive state if not set
     let displayPrice = product.price;
     let displayWeight = product.weight;
     let selectedGrind = currentState.grind || (isInteractive ? product.options.grinds[0] : null);
@@ -329,16 +397,16 @@
       }
     }
 
+    const imgSrc = getProductImage(product);
+
     let interactiveHtml = "";
     if (isInteractive) {
-      // Grind pills
       let grindsHtml = product.options.grinds.map(g => `
         <button type="button" class="option-pill-btn ${selectedGrind === g ? 'active' : ''}" data-card-id="${product.id}" data-action="set-grind" data-value="${g}">
           ${g}
         </button>
       `).join("");
 
-      // Weight pills
       let weightsHtml = product.options.weights.map((w, idx) => {
         const isAct = (currentState.weightIdx !== undefined ? currentState.weightIdx : 0) === idx;
         return `
@@ -356,7 +424,7 @@
           </div>
           <div class="pill-group">${grindsHtml}</div>
           
-          <div class="interactive-label" style="margin-top:0.3rem;">
+          <div class="interactive-label" style="margin-top:0.25rem;">
             <span>حجم العبوة:</span>
           </div>
           <div class="pill-group">${weightsHtml}</div>
@@ -366,7 +434,7 @@
 
     const waBtnHtml = AppState.enableWhatsApp ? `
       <button type="button" class="whatsapp-action-btn" style="display:flex;" data-wa-product="${product.id}" data-wa-name="${product.name}" data-wa-price="${displayPrice}" data-wa-weight="${displayWeight}">
-        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24">
+        <svg style="width:17px;height:17px;fill:currentColor" viewBox="0 0 24 24">
           <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/>
         </svg>
         <span>طلب عبر واتساب</span>
@@ -380,8 +448,8 @@
           <span class="weight-badge">${displayWeight}</span>
         </div>
         
-        <div class="product-image-container" data-action="zoom" data-img="${product.image}" data-title="${product.name}" data-brand="${product.brand}" data-price="${displayPrice}" data-weight="${displayWeight}">
-          <img src="${product.image}" alt="${product.name}" class="product-image" loading="lazy">
+        <div class="product-image-container" data-action="zoom" data-img="${imgSrc}" data-title="${product.name}" data-brand="${product.brand}" data-price="${displayPrice}" data-weight="${displayWeight}">
+          <img src="${imgSrc}" alt="${product.name}" class="product-image" loading="lazy">
           <button class="zoom-hint-btn" title="تكبير الصورة">
             <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
@@ -411,10 +479,11 @@
     `;
   }
 
-  // Render Merged Variants Card (e.g. Kocatepe Light 100g Pouch & 250g Tin)
+  // Render Merged Variants Card (e.g. Kocatepe Light)
   function renderMergedVariantCard(composite) {
     const currentState = AppState.interactiveState[composite.id] || { variantIdx: 0 };
     const activeVar = composite.variants[currentState.variantIdx || 0];
+    const imgSrc = getProductImage(activeVar);
 
     let variantPills = composite.variants.map((v, idx) => {
       const isAct = (currentState.variantIdx || 0) === idx;
@@ -427,7 +496,7 @@
 
     const waBtnHtml = AppState.enableWhatsApp ? `
       <button type="button" class="whatsapp-action-btn" style="display:flex;" data-wa-product="${activeVar.id}" data-wa-name="${activeVar.name}" data-wa-price="${activeVar.price}" data-wa-weight="${activeVar.weight}">
-        <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24">
+        <svg style="width:17px;height:17px;fill:currentColor" viewBox="0 0 24 24">
           <path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21 5.46 0 9.91-4.45 9.91-9.91 0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0012.04 2z"/>
         </svg>
         <span>طلب عبر واتساب</span>
@@ -441,8 +510,8 @@
           <span class="weight-badge">${activeVar.weight}</span>
         </div>
         
-        <div class="product-image-container" data-action="zoom" data-img="${activeVar.image}" data-title="${activeVar.name}" data-brand="${composite.brand}" data-price="${activeVar.price}" data-weight="${activeVar.weight}">
-          <img src="${activeVar.image}" alt="${activeVar.name}" class="product-image" loading="lazy">
+        <div class="product-image-container" data-action="zoom" data-img="${imgSrc}" data-title="${activeVar.name}" data-brand="${composite.brand}" data-price="${activeVar.price}" data-weight="${activeVar.weight}">
+          <img src="${imgSrc}" alt="${activeVar.name}" class="product-image" loading="lazy">
           <button class="zoom-hint-btn" title="تكبير الصورة">
             <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
@@ -452,7 +521,7 @@
 
         <div class="product-content">
           <div>
-            <div class="product-category-text">${composite.category} (خيارات متعددة)</div>
+            <div class="product-category-text">${composite.category} (أحجام متعددة)</div>
             <h3 class="product-title">${composite.name}</h3>
             <p class="product-description">${composite.description || ""}</p>
             
@@ -483,7 +552,6 @@
   // 6. Interactive Card Listeners
   // =========================================================
   function attachCardListeners() {
-    // Zoom / Lightbox triggers
     DOM.grid.querySelectorAll('[data-action="zoom"]').forEach(el => {
       el.addEventListener("click", () => {
         openLightbox({
@@ -496,7 +564,6 @@
       });
     });
 
-    // Grind pill switchers
     DOM.grid.querySelectorAll('[data-action="set-grind"]').forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -508,7 +575,6 @@
       });
     });
 
-    // Weight pill switchers (Espresso)
     DOM.grid.querySelectorAll('[data-action="set-weight"]').forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -520,7 +586,6 @@
       });
     });
 
-    // Variant pill switchers (Merged Variants)
     DOM.grid.querySelectorAll('[data-action="set-variant"]').forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -532,7 +597,6 @@
       });
     });
 
-    // WhatsApp Order triggers (Phase 2)
     DOM.grid.querySelectorAll('[data-wa-product]').forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -564,9 +628,6 @@
     }
   }
 
-  // =========================================================
-  // 8. Phase 2 WhatsApp Inquiry Handler
-  // =========================================================
   function handleWhatsAppInquiry(name, weight, price) {
     const phone = (window.CONFIG && window.CONFIG.WHATSAPP_PHONE) ? window.CONFIG.WHATSAPP_PHONE : "201000000000";
     const msg = `مرحباً Turkish Mood، أود الاستفسار وطلب:\n- المنتج: ${name}\n- الحجم/الوزن: ${weight}\n- السعر: ${price} ج.م\nشكراً لكم!`;
@@ -576,9 +637,33 @@
   }
 
   // =========================================================
-  // 9. Event Listeners Setup
+  // 8. Event Listeners Setup
   // =========================================================
   function setupEventListeners() {
+    // Header Animated Theme Toggle Switch (64px x 32px pill)
+    if (DOM.headerThemeToggle) {
+      DOM.headerThemeToggle.addEventListener("click", () => {
+        const current = normalizeTheme(AppState.theme);
+        const next = current === "light" ? "dark" : "light";
+        applyTheme(next);
+      });
+      DOM.headerThemeToggle.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          const current = normalizeTheme(AppState.theme);
+          applyTheme(current === "light" ? "dark" : "light");
+        }
+      });
+    }
+
+    // Customer View Mode Switcher
+    DOM.viewModeBtns.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const mode = btn.getAttribute("data-set-view");
+        applyViewMode(mode);
+      });
+    });
+
     // Search input
     if (DOM.searchInput) {
       DOM.searchInput.addEventListener("input", (e) => {
@@ -609,7 +694,7 @@
       });
     }
 
-    // Reset search button in empty state
+    // Reset search button
     if (DOM.resetSearchBtn) {
       DOM.resetSearchBtn.addEventListener("click", () => {
         AppState.searchQuery = "";
@@ -621,8 +706,8 @@
       });
     }
 
-    // Preview Panel Toggle
-    if (DOM.previewToggleBtn) {
+    // Admin Panel Controls
+    if (DOM.previewToggleBtn && DOM.previewPopover) {
       DOM.previewToggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         DOM.previewPopover.classList.toggle("open");
@@ -635,7 +720,6 @@
       });
     }
 
-    // Close popover when clicking outside
     document.addEventListener("click", (e) => {
       if (DOM.previewPopover && DOM.previewPopover.classList.contains("open")) {
         if (!DOM.previewPopover.contains(e.target) && !DOM.previewToggleBtn.contains(e.target)) {
@@ -644,28 +728,24 @@
       }
     });
 
-    // Theme Switchers
     DOM.themeChoiceBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         applyTheme(btn.getAttribute("data-set-theme"));
       });
     });
 
-    // Image Mode Switchers
     DOM.imageModeBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         applyImageMode(btn.getAttribute("data-set-image-mode"));
       });
     });
 
-    // Grouping Switchers
     DOM.groupingBtns.forEach(btn => {
       btn.addEventListener("click", () => {
         applyGrouping(btn.getAttribute("data-set-grouping"));
       });
     });
 
-    // Google Sheet URL Sync button inside panel
     if (DOM.sheetSyncBtn && DOM.sheetUrlInput) {
       DOM.sheetSyncBtn.addEventListener("click", async () => {
         const url = DOM.sheetUrlInput.value.trim();
@@ -694,7 +774,6 @@
       });
     }
 
-    // Phase 2 WhatsApp live test button inside floating panel
     if (DOM.waToggleBtn) {
       DOM.waToggleBtn.addEventListener("click", () => {
         AppState.enableWhatsApp = !AppState.enableWhatsApp;
@@ -704,7 +783,6 @@
       });
     }
 
-    // Lightbox Modal Close
     if (DOM.lightboxCloseBtn) {
       DOM.lightboxCloseBtn.addEventListener("click", closeLightbox);
     }
@@ -718,7 +796,6 @@
     });
   }
 
-  // Bootstrap when DOM is ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {

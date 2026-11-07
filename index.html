@@ -1,17 +1,33 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark" data-view-mode="grid">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Turkish Mood | المذاق التركي الأصيل - أفخر أنواع القهوة والشوكولاتة</title>
-  <meta name="description" content="كتالوج منتجات Turkish Mood الرقمي للقهوة التركية الأصلية، الإسبريسو، النسكافيه، وأشهى أنواع الشوكولاتة التركية المستوردة.">
+  <meta name="description" content="كتالوج رقمي فاخر وسريع يستعرض 30 صنفاً من أفخر أنواع القهوة التركية، الإسبريسو، النسكافيه، والشوكولاتة التركية المستوردة.">
   <link rel="stylesheet" href="styles.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>☕</text></svg>">
+
+  <!-- Immediate pre-paint state execution to eliminate any flash -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem("turkish_mood_theme");
+        if (savedTheme === "cream-minimalist" || savedTheme === "light") {
+          document.documentElement.setAttribute("data-theme", "light");
+        } else {
+          document.documentElement.setAttribute("data-theme", "dark");
+        }
+        var savedView = localStorage.getItem("turkish_mood_view_mode") || "grid";
+        document.documentElement.setAttribute("data-view-mode", savedView);
+      } catch (e) {}
+    })();
+  </script>
 </head>
-<body data-theme="dark-luxury" data-image-mode="crop">
+<body data-theme="dark" data-view-mode="grid" data-image-mode="crop">
 
   <!-- =========================================================
-       Site Header
+       Sticky Header with Animated Dark/Light Toggle
        ========================================================= -->
   <header class="site-header">
     <div class="container">
@@ -33,8 +49,28 @@
           </div>
         </div>
 
-        <!-- Header Actions: Facebook Link -->
+        <!-- Header Actions: Theme Toggle & Facebook Link -->
         <div class="header-actions">
+          <!-- Animated Dark/Light Sliding Pill Toggle (64px x 32px) -->
+          <div class="theme-toggle-switch" id="headerThemeToggle" role="button" tabindex="0" title="تبديل المظهر (ليلي / نهاري)" aria-label="تبديل الوضع الليلي والنهاري">
+            <div class="theme-toggle-track">
+              <!-- Moon Icon -->
+              <svg class="theme-track-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.3 2a10 10 0 0 0-.19 20 10 10 0 0 0 8.35-4.5 1 1 0 0 0-.91-1.5 8 8 0 0 1-7.25-14 1 1 0 0 0 0-1.89z"/>
+              </svg>
+              <!-- Sun Icon -->
+              <svg class="theme-track-icon" viewBox="0 0 24 24" fill="currentColor">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+              </svg>
+            </div>
+            <div class="theme-toggle-thumb" id="themeThumb">
+              <svg id="themeThumbIcon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12.3 2a10 10 0 0 0-.19 20 10 10 0 0 0 8.35-4.5 1 1 0 0 0-.91-1.5 8 8 0 0 1-7.25-14 1 1 0 0 0 0-1.89z"/>
+              </svg>
+            </div>
+          </div>
+
           <a href="https://www.facebook.com/profile.php?id=61591511417302" target="_blank" rel="noopener noreferrer" class="fb-btn" aria-label="صفحتنا على فيسبوك">
             <svg viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -56,7 +92,7 @@
         <span>تشكيلة حصرية من تركيا إلى باب بيتك</span>
       </div>
       <h2 class="hero-title">دليل المذاق التركي الأرقى</h2>
-      <p class="hero-description">استكشف قائمتنا المختارة من أجود أنواع القهوة التركية المحوجة والسادة، قهوة ديبك، الإسبريسو الكولومبي والبرازيلي، والشوكولاتة التركية الأصلية.</p>
+      <p class="hero-description">استكشف تشكيلتنا المختارة بعناية من أجود أنواع القهوة التركية السادة والمحوجة، قهوة ديبك الأصلية، الإسبريسو الكولومبي والبرازيلي، والشوكولاتة التركية الفاخرة.</p>
 
       <div class="hero-badges-row">
         <div class="hero-stat-item">
@@ -69,18 +105,18 @@
         </div>
         <div class="hero-stat-item">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-          <span>30 صنف فاخر متاح للاستعراض</span>
+          <span>30 صنفاً فاخراً متاحاً للاستعراض</span>
         </div>
       </div>
     </div>
   </section>
 
   <!-- =========================================================
-       Main Content: Search, Filters & Product Grid
+       Main Content: Search, Filters, View Mode & Catalog Grid
        ========================================================= -->
   <main class="container">
     <section class="filter-section">
-      <!-- Search & Sort Row -->
+      <!-- Search, Sort & Customer View Mode Switcher -->
       <div class="search-bar-container">
         <div class="search-input-wrapper">
           <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -99,9 +135,33 @@
             <option value="brand">ترتيب حسب الماركة</option>
           </select>
         </div>
+
+        <!-- Customer View Mode Switcher: Standard Grid vs Café Menu -->
+        <div class="view-mode-switcher" id="viewModeSwitcher" role="group" aria-label="طريقة عرض المنتجات">
+          <button type="button" class="view-mode-btn active" data-set-view="grid" title="عرض الشبكة الكامل (كروت تفصيلية)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+            <span>عرض الشبكة</span>
+          </button>
+          <button type="button" class="view-mode-btn" data-set-view="cafe" title="منيو الكافيه (تصفح ثنائي الأعمدة سريع للأسعار)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"></line>
+              <line x1="8" y1="12" x2="21" y2="12"></line>
+              <line x1="8" y1="18" x2="21" y2="18"></line>
+              <line x1="3" y1="6" x2="3.01" y2="6"></line>
+              <line x1="3" y1="12" x2="3.01" y2="12"></line>
+              <line x1="3" y1="18" x2="3.01" y2="18"></line>
+            </svg>
+            <span>منيو الكافيه</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Dynamic Category Tabs -->
+      <!-- Dynamic Category Tabs (Extracted automatically from active products) -->
       <div id="categoriesContainer" class="categories-tabs-scroll" role="tablist">
         <!-- Populated dynamically by JavaScript -->
       </div>
@@ -163,43 +223,36 @@
 
   <!-- =========================================================
        Floating UI Preview & Experimentation Panel (z-index: 9999)
-       For Owner Testing & Live Design Customization
+       Only rendered if URL has ?admin=1
        ========================================================= -->
   <aside class="floating-preview-widget" id="previewWidget" aria-label="لوحة تحكم وتجربة العرض">
-    <!-- Popover Settings Modal -->
     <div class="preview-popover" id="previewPopover">
       <div class="popover-header">
         <div class="popover-title">
           <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24">
             <path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97 0-.33-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1 0 .33.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3 0 .22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/>
           </svg>
-          <span>لوحة تجربة وتخصيص العرض</span>
+          <span>لوحة تحكم المالك (Admin)</span>
         </div>
         <button id="previewCloseBtn" class="popover-close-btn" aria-label="إغلاق">✕</button>
       </div>
 
-      <!-- 1. Theme Switcher (3 Complete Designs) -->
+      <!-- 1. Theme Switcher -->
       <div>
-        <div class="popover-section-label">
-          <span>1. نمط التصميم (Theme)</span>
+        <div class="popover-section-label" style="font-size:0.8rem;color:#d1c2b5;font-weight:700;margin-bottom:0.4rem;">
+          <span>1. نمط المظهر (Theme)</span>
         </div>
         <div class="control-pill-selector">
-          <button type="button" class="radio-choice-btn active" data-set-theme="dark-luxury">
+          <button type="button" class="radio-choice-btn" data-set-theme="dark">
             <div>
               <strong>فخامة داكنة (Dark Luxury)</strong>
               <div class="choice-subtext">بني اسبريسو فاخر #120c09 مع لمسات ذهبية #d4af37</div>
             </div>
           </button>
-          <button type="button" class="radio-choice-btn" data-set-theme="cream-minimalist">
+          <button type="button" class="radio-choice-btn" data-set-theme="light">
             <div>
               <strong>كريمي هادئ (Cream Minimalist)</strong>
               <div class="choice-subtext">أوف وايت ناعم #faf6f0 مع خطوط بنية عميقة</div>
-            </div>
-          </button>
-          <button type="button" class="radio-choice-btn" data-set-theme="cafe-compact">
-            <div>
-              <strong>قائمة المقهى المدمجة (Café Menu)</strong>
-              <div class="choice-subtext">شبكة ثنائية للهاتف لمسح الأسعار سريعاً</div>
             </div>
           </button>
         </div>
@@ -207,20 +260,20 @@
 
       <!-- 2. Image Display Mode Toggle -->
       <div>
-        <div class="popover-section-label">
+        <div class="popover-section-label" style="font-size:0.8rem;color:#d1c2b5;font-weight:700;margin-bottom:0.4rem;">
           <span>2. طريقة عرض الصور (Image Mode)</span>
         </div>
         <div class="control-pill-selector">
           <button type="button" class="radio-choice-btn active" data-set-image-mode="crop">
             <div>
-              <strong>قص ذكي للعبوة (Smart Crop - الافتراضي)</strong>
-              <div class="choice-subtext">إخفاء شريط السعر المطبوع في أسفل الصورة والتركيز على العبوة</div>
+              <strong>صور مقصوصة نقية (Cropped - الافتراضي)</strong>
+              <div class="choice-subtext">إزالة شريط السعر المطبوع وتركيز تام على العبوة الأصلية</div>
             </div>
           </button>
           <button type="button" class="radio-choice-btn" data-set-image-mode="full">
             <div>
-              <strong>الصورة الكاملة (Full Image)</strong>
-              <div class="choice-subtext">إظهار كامل الصورة بما في ذلك شريط السعر الأصلي المطبوع</div>
+              <strong>الصورة الأصلية الكاملة (Full Image)</strong>
+              <div class="choice-subtext">إظهار أبعاد الصورة الأصلية مع شريط السعر القديم</div>
             </div>
           </button>
         </div>
@@ -228,20 +281,20 @@
 
       <!-- 3. Size Grouping Toggle -->
       <div>
-        <div class="popover-section-label">
-          <span>3. تجميع الأحجام والأوزان (Size Grouping)</span>
+        <div class="popover-section-label" style="font-size:0.8rem;color:#d1c2b5;font-weight:700;margin-bottom:0.4rem;">
+          <span>3. تجميع الأحجام (Size Grouping)</span>
         </div>
         <div class="control-pill-selector">
-          <button type="button" class="radio-choice-btn active" data-set-grouping="separate">
+          <button type="button" class="radio-choice-btn active" data-set-grouping="merged">
             <div>
-              <strong>كروت منفصلة (Separate Cards - الافتراضي)</strong>
-              <div class="choice-subtext">عرض أكياس 100 جرام والعلب 250 جرام كمنتجات مستقلة</div>
+              <strong>دمج الأحجام (Merged Variants - الافتراضي)</strong>
+              <div class="choice-subtext">دمج أصناف البن المتطابقة في كارت واحد مع تبديل الوزن والصورة</div>
             </div>
           </button>
-          <button type="button" class="radio-choice-btn" data-set-grouping="merged">
+          <button type="button" class="radio-choice-btn" data-set-grouping="separate">
             <div>
-              <strong>دمج الأحجام (Merged Variants)</strong>
-              <div class="choice-subtext">دمج أصناف البن المتطابقة بكارت واحد مع أزرار تبديل الوزن والصورة</div>
+              <strong>كروت منفصلة (Separate Cards)</strong>
+              <div class="choice-subtext">عرض كل حجم أو كيس كمنتج مستقل تماماً</div>
             </div>
           </button>
         </div>
@@ -249,10 +302,10 @@
 
       <!-- 4. Google Sheets Hybrid Sync Tester -->
       <div>
-        <div class="popover-section-label">
+        <div class="popover-section-label" style="font-size:0.8rem;color:#d1c2b5;font-weight:700;margin-bottom:0.4rem;">
           <span>4. مزامنة Google Sheets CSV</span>
         </div>
-        <div class="choice-subtext" style="margin-bottom:0.4rem;">الصق رابط ملف Google Sheets المنشور بصيغة CSV للتحديث اللحظي:</div>
+        <div class="choice-subtext" style="margin-bottom:0.35rem;">الصق رابط شيت Google المنشور بصيغة CSV للتحديث اللحظي:</div>
         <div class="sheet-input-row">
           <input type="text" id="sheetUrlInput" class="sheet-url-input" placeholder="https://docs.google.com/.../pub?output=csv">
           <button type="button" id="sheetSyncBtn" class="sheet-sync-btn">مزامنة</button>
@@ -262,7 +315,7 @@
 
       <!-- 5. Phase 2 WhatsApp Preview Toggle -->
       <div style="border-top:1px solid rgba(212,175,55,0.25); padding-top:0.75rem;">
-        <div class="popover-section-label">
+        <div class="popover-section-label" style="font-size:0.8rem;color:#d1c2b5;font-weight:700;margin-bottom:0.4rem;">
           <span>5. تجربة زر واتساب (Phase 2 Preview)</span>
         </div>
         <button type="button" id="waToggleBtn" class="radio-choice-btn" style="width:100%; text-align:center; justify-content:center;">
@@ -273,11 +326,11 @@
 
     <!-- Floating Trigger Button -->
     <button type="button" id="previewToggleBtn" class="preview-toggle-button" aria-haspopup="true">
-      <svg style="width:19px;height:19px;fill:currentColor" viewBox="0 0 24 24">
+      <svg style="width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
       </svg>
-      <span>تجربة العرض والأنماط</span>
-      <span class="preview-toggle-badge">OWNER</span>
+      <span>لوحة المالك</span>
+      <span class="preview-toggle-badge">ADMIN</span>
     </button>
   </aside>
 
@@ -287,7 +340,9 @@
   <div id="lightboxModal" class="lightbox-modal" role="dialog" aria-modal="true" aria-label="عرض الصورة بالحجم الكامل">
     <div class="lightbox-content">
       <button id="lightboxCloseBtn" class="lightbox-close-btn" aria-label="إغلاق">✕</button>
-      <img id="lightboxImage" src="" alt="" class="lightbox-image">
+      <div class="lightbox-image-box">
+        <img id="lightboxImage" src="" alt="" class="lightbox-image">
+      </div>
       <div class="lightbox-details">
         <h4 id="lightboxTitle" class="lightbox-title">عنوان المنتج</h4>
         <div class="lightbox-meta">
@@ -300,7 +355,7 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Application Scripts -->
   <script src="config.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>

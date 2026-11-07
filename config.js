@@ -22,10 +22,11 @@ const CONFIG = {
   // If left empty or offline, the app uses products.json immediately.
   GOOGLE_SHEET_CSV_URL: "",
 
-  // Default UI Settings (can be toggled in floating preview panel & stored in localStorage)
-  DEFAULT_THEME: "dark-luxury", // 'dark-luxury' | 'cream-minimalist' | 'cafe-compact'
-  DEFAULT_IMAGE_MODE: "crop",   // 'crop' (Smart Crop top 78%) | 'full' (Contain original)
-  DEFAULT_GROUPING: "separate", // 'separate' (Cards) | 'merged' (Same roast/brand variants)
+  // Default UI Settings (can be toggled in customer controls & stored in localStorage)
+  DEFAULT_THEME: "dark",        // 'dark' (Dark Luxury) | 'light' (Cream Minimalist)
+  DEFAULT_VIEW_MODE: "grid",    // 'grid' (Standard Cards) | 'cafe' (Café Menu 2-column)
+  DEFAULT_IMAGE_MODE: "crop",   // 'crop' (Clean Pre-cropped) | 'full' (Contain original)
+  DEFAULT_GROUPING: "merged",   // 'merged' (Default merged variants) | 'separate' (Independent cards)
   
   // Currency & Formatting
   CURRENCY: "ج.م",
